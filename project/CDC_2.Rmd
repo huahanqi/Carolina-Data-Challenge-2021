@@ -1,0 +1,470 @@
+---
+title: "Carolina Data Challenge"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(readr)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(formattable)
+library(wordcloud)
+library(RWeka)
+library(qdap)
+library(tm)
+library(ggeasy)
+library(tidyr)
+library(lubridate)
+```
+```{r}
+nokia <- read_csv("/Users/linghongmao/Desktop/Carolina\ Data\ Challenge/nokia.csv")
+nokia = nokia %>% 
+  as.data.frame()
+head(nokia)
+```
+
+```{r}
+apple <- read_csv("/Users/linghongmao/Desktop/Carolina\ Data\ Challenge/apple.csv")
+apple = apple %>% 
+  as.data.frame()
+head(apple)
+```
+
+
+
+```{r}
+bbery<- read_csv("/Users/linghongmao/Desktop/Carolina\ Data\ Challenge/bbery.csv")
+bbery = bbery %>% 
+  as.data.frame()
+head(bbery)
+```
+
+```{r}
+samsung <- read_csv("/Users/linghongmao/Desktop/Carolina\ Data\ Challenge/samsung.csv")
+samsung = samsung %>% 
+  as.data.frame()
+head(samsung)
+```
+
+
+```{r}
+android <- read_csv("/Users/linghongmao/Desktop/Carolina\ Data\ Challenge/android.csv")
+android = android %>% 
+  as.data.frame()
+head(android)
+```
+
+
+
+```{r}
+df <- rbind(android, samsung, apple,bbery,nokia)
+df[is.na(df)] <- 0
+head(df)
+```
+```{r}
+df_Q4= df %>% group_by(Q4) %>%
+    summarise(Number_of_Answer = n())
+ggplot(df_Q4,aes(as.factor(Q4), Number_of_Answer,fill= Number_of_Answer)) + geom_col() +
+  labs(title ="Which app store do you use?",x ="", y="", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+```{r}
+df_Q5= df %>% group_by(Q5) %>%
+    summarise(Number_of_Answer = n())
+ggplot(df_Q5,aes(as.factor(Q5), Number_of_Answer,fill= Number_of_Answer)) + geom_col() +
+  labs(title ="How frequently do you visit the app store to look for apps?",x ="", y="", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:9)),
+                     labels = c("Never","Less than once a month","Once a month",
+                                "More than once a month","once a week","More than once a week",
+                                "Once a day","Several times a day","Other")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+```{r}
+df_Q6= df %>% group_by(Q6) %>%
+    summarise(Number_of_Answer = n())
+ggplot(df_Q6,aes(as.factor(Q6), Number_of_Answer,fill= Number_of_Answer)) + geom_col() +
+  labs(title ="On average, how many apps do you download a month?",x ="", y="", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:6)),
+                     labels = c("0 - 1 ","2 - 5","6 - 10",
+                                "11 - 20","21 - 30","More than 30")) +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+df_Q27= df %>% 
+  group_by(Q27) %>%
+  summarise(Number_of_Answer = n())
+ggplot(df_Q27,aes(as.factor(Q27), Number_of_Answer,fill= Number_of_Answer)) + geom_col() +
+  labs(title ="What is your current or most recent occupation?",x ="", y="", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:25)),
+                     labels = c("Management", "Business and Financial Operations", "Computer and Mathematical","Architecture and Engineering","Life, Physical, and Social Science", "Community and Social Services","Legal","Education, Training, and Library","Arts, Design, Entertainment, Sports, and Media","Healthcare Practitioners and Technical", "Healthcare Support","Protective Service","Food Preparation and Serving Related","Building and Grounds Cleaning and Maintenance","Personal Care and Service","Sales and Related","Office and Administrative Support","Farming, Fishing, and Forestry","Construction and Extraction","Installation, Maintenance, and Repair","Production","Transportation and Material Moving","Military Specific","Student")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_flip()
+```
+
+```{r}
+  Q4_5_df = df %>% group_by(Q4,Q5) %>%
+  summarise(Number_of_Answer=n(),.groups='drop') %>%
+  complete(Q4,Q5)
+  Q4_5_df[is.na(Q4_5_df)] <- 0
+  Q4_5_df %>% ggplot(aes(x=as.factor(Q4),y=as.factor(Q5),fill=Number_of_Answer)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1,
+            ) +
+  labs(title ="How frequently do you visit the app store to look for apps?",x ="", y="",fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  scale_y_discrete(limit = c(factor(1:9)),
+                     labels = c("Never","Less than once a month","Once a month",
+                                "More than once a month","once a week","More than once a week",
+                                "Once a day","Several times a day","Other")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low="light blue", mid="white", high="red", 
+                       midpoint=200, limits=range(Q4_5_df$Number_of_Answer))
+```
+```{r}
+  Q4_5_percent_df = df %>% group_by(Q4,Q5) %>%
+  summarise(Number_of_answer=n(),.groups='drop') %>% 
+  group_by(Q4)%>%
+  mutate(percent = round(x=Number_of_answer/sum(Number_of_answer), digit=4)) %>% 
+  ungroup() %>%
+  complete(Q4,Q5)
+  Q4_5_percent_df[is.na(Q4_5_percent_df)] <- 0
+  Q4_5_percent_df %>% ggplot(aes(x=as.factor(Q4),y=as.factor(Q5),fill=percent)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1,
+            ) +
+  labs(title ="How frequently do you visit the app store to look for apps?",x ="", y="",fill="Percentage") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+   scale_y_discrete(limit = c(factor(1:9)),
+                     labels = c("Never","Less than once a month","Once a month",
+                                "More than once a month","once a week","More than once a week",
+                                "Once a day","Several times a day","Other")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low="light blue", mid="white", high="red", 
+                       midpoint=0.1, limits=range(Q4_5_percent_df$percent))
+```
+```{r}
+  Q4_6_df = df %>% group_by(Q4,Q6) %>%
+  summarise(Number_of_Answer=n(),.groups='drop') %>%
+  complete(Q4,Q6)
+  Q4_6_df[is.na(Q4_6_df)] <- 0
+  Q4_6_df %>% ggplot(aes(x=as.factor(Q4),y=as.factor(Q6),fill=Number_of_Answer)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1,
+            ) +
+  labs(title ="On average, how many apps do you download a month?",x ="", y="",fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  scale_y_discrete(limit = c(factor(1:6)),
+                     labels = c("0 - 1 ","2 - 5","6 - 10",
+                                "11 - 20","21 - 30","More than 30")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low="light blue", mid="white", high="red", 
+                       midpoint=200, limits=range(Q4_6_df$Number_of_Answer))
+```
+```{r}
+  Q4_6_percent_df = df %>% group_by(Q4,Q6) %>%
+  summarise(Number_of_answer=n(),.groups='drop') %>% 
+  group_by(Q4)%>%
+  mutate(percent = round(x=Number_of_answer/sum(Number_of_answer), digit=4)) %>% 
+  ungroup() %>%
+  complete(Q4,Q6)
+  Q4_6_percent_df[is.na(Q4_6_percent_df)] <- 0
+  Q4_6_percent_df %>% ggplot(aes(x=as.factor(Q4),y=as.factor(Q6),fill=percent)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1,
+            ) +
+  labs(title ="On average, how many apps do you download a month?",x ="", y="",fill="Percentage") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  scale_y_discrete(limit = c(factor(1:6)),
+                     labels = c("0 - 1 ","2 - 5","6 - 10",
+                                "11 - 20","21 - 30","More than 30")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low="light blue", mid="white", high="red", 
+                       midpoint=0.25, limits=range(Q4_6_percent_df$percent))
+```
+
+```{r}
+Q7_frame = df[,c(18,22:27)]
+Q7_frame_mid <- Q7_frame %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q7_frame_final = Q7_frame_mid %>%
+  pivot_longer(Q7_1:Q7_6, names_to="Q7_Answer_type", values_to="Number_of_Answer")
+Q7_frame_final %>% 
+  as.data.frame() %>%
+  ggplot(aes(x=as.factor(Q4),y=as.factor(Q7_Answer_type),fill=Number_of_Answer)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="When do you look for apps? (please select all that apply)",x ="", y="", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  scale_y_discrete(limit = c(factor(unique(Q7_frame_final$Q7_Answer_type))),
+                     labels = c("When feeling depressed","When I need to carry out a task","When I am feeling bored",
+                                "When I want to be entertained","When I need to know something","Other")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=500, limits=range(Q7_frame_final$Number_of_Answer))
+```
+
+
+
+```{r}
+Q7_percent_frame = df[,c(18,22:27)]
+Q7_percent_frame_mid <- Q7_frame %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q7_percent_frame_final = Q7_frame_mid %>%
+  pivot_longer(Q7_1:Q7_6, names_to="Q7_Answer_type", values_to="Number_of_Answer")
+Q7_percent_frame_final = Q7_percent_frame_final %>% 
+  as.data.frame() %>%
+  group_by(Q4)%>%
+  mutate(percent = round(x=Number_of_Answer/sum(Number_of_Answer), digit=4)) %>% 
+  ungroup()
+  ggplot(Q7_percent_frame_final,aes(x=as.factor(Q4),y=as.factor(Q7_Answer_type),fill=percent)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="When do you look for apps? (please select all that apply)",x ="", y="", fill="Percentage") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  scale_y_discrete(limit = c(factor(unique(Q7_frame_final$Q7_Answer_type))),
+                     labels = c("When feeling depressed","When I need to carry out a task","When I am feeling bored",
+                                "When I want to be entertained","When I need to know something","Other")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=0.2, limits=range(Q7_percent_frame_final$percent))
+
+```
+```{r}
+Q8_frame = df[,c(18,28:36)]
+Q8_mid <- Q8_frame %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q8_final = Q8_mid %>%
+  pivot_longer(Q8_1:Q8_10, names_to="Q8_Answer_type", values_to="Number_of_Answer")
+Q8_final %>% 
+  as.data.frame() %>%
+  ggplot(aes(x=as.factor(Q4),y=factor(Q8_Answer_type, unique(Q8_Answer_type)),fill=Number_of_Answer)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="How do you find apps? (please select all that apply)",x ="", y="Q8 Answer Type", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=500, limits=range(Q8_final$Number_of_Answer))
+```
+
+```{r}
+Q8_percent_frame = df[,c(18,28:36)]
+Q8_percent_mid <- Q8_percent_frame %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q8_percent_final = Q8_percent_mid %>%
+  pivot_longer(Q8_1:Q8_10, names_to="Q8_Answer_type", values_to="Number_of_Answer")
+Q8_percent_final = Q8_percent_final %>% 
+  as.data.frame() %>%
+  group_by(Q4)%>%
+  mutate(percent = round(x=Number_of_Answer/sum(Number_of_Answer), digit=4)) %>% 
+  ungroup()
+  ggplot(Q8_percent_final,aes(x=as.factor(Q4),y=factor(Q8_Answer_type, unique(Q8_Answer_type)),fill=percent)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="How do you find apps? (please select all that apply)",x ="", y="Q8 Answer Type", fill="Percentage") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=0.13, limits=range(Q8_percent_final$percent))
+```
+
+```{r}
+Q9_frame = df[,c(18,37:49)]
+Q9_frame_mid <- Q9_frame %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q9_frame_final = Q9_frame_mid %>%
+  pivot_longer(Q9_1:Q9_13, names_to="Q9_Answer_type", values_to="Number_of_Answer")
+Q9_frame_final %>% 
+  as.data.frame() %>%
+  ggplot(aes(x=as.factor(Q4),y=factor(Q9_Answer_type, unique(Q9_Answer_type)),fill=Number_of_Answer)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="What do you consider when choosing apps to download?",x ="", y="", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  scale_y_discrete(limit = c(factor(unique(Q9_frame_final$Q9_Answer_type))),
+                     labels = c("Reviews by other users","Name of app","Number of users who have downloaded the app", "Icon","Description of the app", "Features", "Number of users who have rated the app","Price","Star rating","Size of app","Screen shots", "Who developed the app","Other")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=500, limits=range(Q9_frame_final$Number_of_Answer))
+```
+```{r}
+Q9_percent = df[,c(18,37:49)]
+Q9_percent_mid <- Q9_percent %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q9_percent_final = Q9_percent_mid %>%
+  pivot_longer(Q9_1:Q9_13, names_to="Q9_Answer_type", values_to="Number_of_Answer")
+Q9_percent_final = Q9_percent_final %>% 
+  as.data.frame() %>%
+  group_by(Q4)%>%
+  mutate(percent = round(x=Number_of_Answer/sum(Number_of_Answer), digit=4)) %>% 
+  ungroup()
+  ggplot(Q9_percent_final,aes(x=as.factor(Q4),y=factor(Q9_Answer_type, unique(Q9_Answer_type)),fill=percent)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="What do you consider when choosing apps to download?",x ="", y="", fill="Percentage") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  scale_y_discrete(limit = c(factor(unique(Q9_frame_final$Q9_Answer_type))),
+                     labels = c("Reviews by other users","Name of app","Number of users who have downloaded the app", "Icon","Description of the app", "Features", "Number of users who have rated the app","Price","Star rating","Size of app","Screen shots", "Who developed the app","Other")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=0.1, limits=range(Q9_percent_final$percent))
+```
+
+
+
+```{r}
+Q10_frame = df[,c(18,50:64)]
+Q10_frame_mid <- Q10_frame %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q10_frame_final = Q10_frame_mid %>%
+  pivot_longer(Q10_1:Q10_15, names_to="Q10_Answer_type", values_to="Number_of_Answer")
+Q10_frame_final %>% 
+  as.data.frame() %>%
+  ggplot(aes(x=as.factor(Q4),y=factor(Q10_Answer_type, unique(Q10_Answer_type)),fill=Number_of_Answer)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="Why do you download an app? (please select all that apply)",x ="", y="Q10 Answer Type", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=500, limits=range(Q10_frame_final$Number_of_Answer))
+```
+
+```{r}
+Q10_percent = df[,c(18,50:64)]
+Q10_percent_mid <- Q10_percent %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q10_percent_final = Q10_percent_mid %>%
+  pivot_longer(Q10_1:Q10_15, names_to="Q10_Answer_type", values_to="Number_of_Answer")
+Q10_percent_final = Q10_percent_final %>% 
+  as.data.frame() %>%
+  group_by(Q4)%>%
+  mutate(percent = round(x=Number_of_Answer/sum(Number_of_Answer), digit=4)) %>% 
+  ungroup()
+  ggplot(Q10_percent_final, aes(x=as.factor(Q4),y=factor(Q10_Answer_type, unique(Q10_Answer_type)),fill=percent)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="Why do you download an app? (please select all that apply)",x ="", y="Q10 Answer Type", fill="Percentage") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=0.1, limits=range(Q10_percent_final$percent))
+```
+
+
+```{r}
+Q15_frame = df[,c(18,104:126)]
+Q15_frame_mid <- Q15_frame %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q15_frame_final = Q15_frame_mid %>%
+  pivot_longer(Q15_1:Q15_23, names_to="Q15_Answer_type", values_to="Number_of_Answer")
+Q15_frame_final %>% 
+  as.data.frame() %>%
+  ggplot(aes(x=as.factor(Q4),y=factor(Q15_Answer_type, unique(Q15_Answer_type)),fill=Number_of_Answer)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="Which type of apps do you download? (please select all that apply)",x ="", y="Q15 Answer Type", fill="Number of Answer") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=500, limits=range(Q15_frame_final$Number_of_Answer))
+```
+
+
+```{r}
+Q15_percent = df[,c(18,104:126)]
+Q15_percent_mid <- Q15_percent %>% 
+    group_by(Q4) %>% 
+    summarise_each(funs(sum))
+Q15_percent_final = Q15_percent_mid %>%
+  pivot_longer(Q15_1:Q15_23, names_to="Q15_Answer_type", values_to="Number_of_Answer")
+Q15_percent_final = Q15_percent_final %>% 
+  as.data.frame() %>%
+  group_by(Q4)%>%
+  mutate(percent = round(x=Number_of_Answer/sum(Number_of_Answer), digit=4)) %>% 
+  ungroup()
+  ggplot(Q15_percent_final,aes(x=as.factor(Q4),y=factor(Q15_Answer_type, unique(Q15_Answer_type)),fill=percent)) +
+    geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  labs(title ="Which type of apps do you download? (please select all that apply)",x ="", y="Q15 Answer Type", fill="Percentage") +
+  scale_x_discrete(limit = c(factor(1:5)),
+                     labels = c("Apple iOS App Store","Blackberry App World ","Google Play / Android Market",
+                                "Nokia Ovi Store","Samsung Application Store")) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_fill_gradient2(low=" light blue", mid="white", high="red", 
+                       midpoint=0.05, limits=range(Q15_percent_final$percent))
+```
