@@ -6,4 +6,4 @@
 * Yike Zhu
 * Yicheng Zou
 
-### This is the GitHub repository for Team ....
+### This is the GitHub repository for Team Boom Shaka Laka
