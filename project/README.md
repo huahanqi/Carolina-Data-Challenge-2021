@@ -1,23 +1,8 @@
-# Project Tools
+# Project Description
 
-Once you've settled on a dataset, you can start your projects! You can use whatever statistical tools that suit your needs. But if you're new, or just wanting to explore some new tools, here are a couple that you can use/download!
+### Primary Tools
+1. R studio
+2. Python (Jupyter Notebook)
 
-### Python (Anaconda)
-Anaconda is an open source distribution of Python and R for scientific computing and data science. It comes with many pre-installed packages that you’ll find useful for Data Science and Machine Learning.
-
-[Download Link](https://www.anaconda.com/products/individual)
-
-### Python (Google Colab)
-Google Colab is a completely online python data science notebook that requires no downloading to run. It supports most popular Python packages from the get-go, and it sports built in Github support.
-
-[Link](https://colab.research.google.com)
-
-### R (RStudio)
-RStudio is a popular IDE for statistical computing in R. It allows you to have multiple panes for managing files, code, a terminal, and creating data visualizations. This is the preferred IDE for Data Scientists who use R.
-
-[Download Link](https://www.rstudio.com/products/rstudio/download/)
-
-### Tableau
-Tableau is a code-free data visualization tool that allows you to create interactive graphs, maps, and dashboards. You can pull in data from multiple sources and customize the look of your visualizations. In addition to the free public download available at the link above, your university may also provide a license for the desktop version.
-
-[Download Link](https://public.tableau.com/s/)
+### Process
+We first use Python to read the data, and do some data cleaning to choose the variables we are particularly interested in. Then we export the dataset to R studio to do some exploratory data analysis. Using R, we then plot the data to analyze users' habits for each of the five App stores (see code in CDC_2). Based on the pattern from users' feedback, we come out with some suggestions for App stores and providers to better serve their current customers. Besides, given the large amount of data, we also use python to do the modeling, which predicts user's preference of phone brands based on their Gender, Age, Marital status, Occupation, income, etc (see code in CDC_1). In this way, we further indentifies potential customers for different kinds of mobile applications. Thus, the app stores can better recommend products to their users according to their user profile.
