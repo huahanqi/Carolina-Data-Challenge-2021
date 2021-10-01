@@ -1,4 +1,4 @@
-# 2021 CDC Project 
+# 2021 Carolina Data Challenge Project 
 
 ## Team Member
 * Hanqi Hua
@@ -6,4 +6,4 @@
 * Yike Zhu
 * Yicheng Zou
 
-### This is the Github Repository for Team ....
+### This is the GitHub Repository for Team ....
