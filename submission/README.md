@@ -1,4 +1,4 @@
-# Submissions
+# Submission
 
 ### Presentation Video
 
